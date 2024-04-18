@@ -1,2 +1,3 @@
 build/
-*.txt
+last_run.txt
+summary.txt
