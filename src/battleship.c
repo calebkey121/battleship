@@ -120,7 +120,7 @@ int run_loop( char board[BOARD_LENGTH][BOARD_LENGTH + 1], struct boat b, FILE *f
     #else
         output(fp, stdout, ">>>--- Start Game ---<<<\n\n");
         print_board(board, fp);
-        int num_shots = game_loop(board, b.length, fp);
+        int num_shots = game_loop(board, b.length, 0, fp);
         print_board(board, fp);
         output(fp, stdout, "you win! number of shots needed: %d\n\n", num_shots);
         output(fp, stdout, ">>>--- End Game ---<<<\n");
@@ -191,5 +191,8 @@ int main(int argc, char *argv[]) {
 
     int status = run_loop(board, my_boat, fp);
     fclose(fp);
+
+    printf("size of float: %lu\n", sizeof(float));
+    printf("size of double: %lu\n", sizeof(double));
     return status;
 }
