@@ -14,11 +14,13 @@
 
 #include "common.h"
 #include "battleship_tools.h"
+#include "file_stuff.h"
 
 
 bool fire( char board[BOARD_LENGTH][BOARD_LENGTH + 1], int target_coords[2], FILE *fp );
 int game_loop( char board[BOARD_LENGTH][BOARD_LENGTH + 1], int num_hits, int game_num, FILE *fp );
 int run_loop( char board[BOARD_LENGTH][BOARD_LENGTH + 1], struct boat b, FILE *fp);
+void print_file_information( const char *filename );
 
 
 #endif

@@ -12,7 +12,7 @@ bool fire( char board[BOARD_LENGTH][BOARD_LENGTH + 1], int target_coords[2], FIL
             output(fp, stdout, "hit!\n");
         #endif
         return true;
-    } else if ( board[target_coords[0]][target_coords[1]] == HIT_CHAR ) {
+    } else if ( board[target_coords[0]][target_coords[1]] == HIT_CHAR ) { // or miss char too, right?
         #ifndef RANDOM_ENABLED
             output(fp, stdout, "You already hit there previously.. are you even paying attention!?!\n");
         #endif
@@ -81,40 +81,38 @@ int game_loop( char board[BOARD_LENGTH][BOARD_LENGTH + 1], int num_hits, int gam
 int run_loop( char board[BOARD_LENGTH][BOARD_LENGTH + 1], struct boat b, FILE *fp ) {
     // game loop, return int 0 for success, non-zero for error
     #ifdef RANDOM_ENABLED
-        int num_shots[NUM_RUNS];
-        int shots, total_shots = 0;
-        int max_num_shots = 0;
-        int min_num_shots = INT_MAX;
+        int arr[NUM_RUNS];
+        struct run_stats stats = { NUM_RUNS, arr, 0, 0, INT_MAX, 0.0}; //
+        int shots = 0; // useful placeholder
         for ( int i = 0; i < NUM_RUNS; i++ ) {
-            output(fp, stdout, ">>>--- Start Game ---<<<\n\n");
+            output(fp, stdout, ">>>--- Start Run ---<<<\n\n");
             shots = game_loop(board, b.length, i, fp);
             print_board(board, fp);
             output(fp, stdout, "you win! number of shots needed: %d\n\n", shots);
-            output(fp, stdout, ">>>--- End Game ---<<<\n");
+            output(fp, stdout, ">>>---  End Run  ---<<<\n");
 
-            num_shots[i] = shots;
-            total_shots += shots;
-            if ( shots > max_num_shots ) {
-                max_num_shots = shots;
+            stats.shots_per_run[i] = shots;
+            stats.total_shots += shots;
+            if ( shots > stats.max_num_shots ) {
+                stats.max_num_shots = shots;
             }
-            if (shots < min_num_shots ) {
-                min_num_shots = shots;
+            if (shots < stats.min_num_shots ) {
+                stats.min_num_shots = shots;
             }
 
             // gotta reset board each game
             set_board(board, b, fp); // don't really need to check if it was set (already did)
         }
-
-        float average_num_shots = total_shots / NUM_RUNS;
-        output(fp, stdout, ">>>--- Start Summary ---<<<\n");
-        output(fp, stdout, "Total number of shots: %d\n", total_shots);
-        output(fp, stdout, "Highest shots in single game: %d\n", max_num_shots);
-        output(fp, stdout, "Fewest shots in single game: %d\n", min_num_shots);
-        output(fp, stdout, "Average number of shots: %f\n\n", total_shots / NUM_RUNS);
+        stats.average_num_shots = (float)stats.total_shots / NUM_RUNS; 
+        
+        output(fp, stdout, ">>>--- Start Summary ---<<<\n\n");
+        output(fp, stdout, "Total number of shots: %d\n", stats.total_shots);
+        output(fp, stdout, "Highest shots in single game: %d\n", stats.max_num_shots);
+        output(fp, stdout, "Fewest shots in single game: %d\n", stats.min_num_shots);
+        output(fp, stdout, "Average number of shots: %f\n\n", stats.average_num_shots);
         output(fp, stdout, ">>>---  End Summary  ---<<<\n");
-
-        if ( write_summary(total_shots, max_num_shots, min_num_shots, average_num_shots) ) {
-            output(fp, stderr, "Error writing summary file");
+        if ( write_history(stats) == 1 ) {
+            output(fp, stderr, "Error writing summary file\n");
             return 1;
         }
     #else
@@ -133,7 +131,7 @@ int main(int argc, char *argv[]) {
     int start_x = 2, start_y = 3, length = 4;
     bool horizontal = false;
     char *env_var;
-    FILE *fp = fopen(LAST_RUN_FILENAME, "a"); // expected to run from a build folder inside of 6_x dir
+    FILE *fp = fopen(LAST_RUN_FILENAME, "w"); // expected to run from a build folder inside of 6_x dir
     if ( fp == NULL ) {
         return end_game_early(fp, "Error opening file: %s\n", LAST_RUN_FILENAME, strerror(errno));
     }
@@ -191,8 +189,5 @@ int main(int argc, char *argv[]) {
 
     int status = run_loop(board, my_boat, fp);
     fclose(fp);
-
-    printf("size of float: %lu\n", sizeof(float));
-    printf("size of double: %lu\n", sizeof(double));
     return status;
-}
+    }

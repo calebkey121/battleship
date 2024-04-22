@@ -1,3 +1,5 @@
 build/
 last_run.txt
-summary.txt
+history.txt
+.DS_Store
+.vscode/
