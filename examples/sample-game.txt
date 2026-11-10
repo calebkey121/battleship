@@ -1,0 +1,7 @@
+>>>--- Start Game ---<<<
+
+Targeting (8, 5): hit!
+Targeting (9, 5): hit!
+you win! number of shots needed: 2
+
+>>>--- End Game ---<<<
